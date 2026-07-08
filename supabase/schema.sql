@@ -1,6 +1,6 @@
 -- ============================================================
 --  生き物コレクション アプリ  スキーマ
---  Supabase の SQL Editor に貼り付けて実行する
+--  Supabase の SQL Editor に貼り付けて実行する（何度でも再実行可）
 -- ============================================================
 
 -- --- profiles: Auth ユーザーと 1:1 -----------------------------
@@ -78,44 +78,58 @@ alter table public.worlds     enable row level security;
 alter table public.placements enable row level security;
 
 -- profiles
+drop policy if exists "profiles are viewable by owner" on public.profiles;
 create policy "profiles are viewable by owner"
   on public.profiles for select using (auth.uid() = id);
+drop policy if exists "profiles updatable by owner" on public.profiles;
 create policy "profiles updatable by owner"
   on public.profiles for update using (auth.uid() = id);
 
 -- captures
+drop policy if exists "captures selectable by owner" on public.captures;
 create policy "captures selectable by owner"
   on public.captures for select using (auth.uid() = user_id);
+drop policy if exists "captures insertable by owner" on public.captures;
 create policy "captures insertable by owner"
   on public.captures for insert with check (auth.uid() = user_id);
+drop policy if exists "captures updatable by owner" on public.captures;
 create policy "captures updatable by owner"
   on public.captures for update using (auth.uid() = user_id);
+drop policy if exists "captures deletable by owner" on public.captures;
 create policy "captures deletable by owner"
   on public.captures for delete using (auth.uid() = user_id);
 
 -- worlds
+drop policy if exists "worlds selectable by owner" on public.worlds;
 create policy "worlds selectable by owner"
   on public.worlds for select using (auth.uid() = user_id);
+drop policy if exists "worlds insertable by owner" on public.worlds;
 create policy "worlds insertable by owner"
   on public.worlds for insert with check (auth.uid() = user_id);
+drop policy if exists "worlds updatable by owner" on public.worlds;
 create policy "worlds updatable by owner"
   on public.worlds for update using (auth.uid() = user_id);
+drop policy if exists "worlds deletable by owner" on public.worlds;
 create policy "worlds deletable by owner"
   on public.worlds for delete using (auth.uid() = user_id);
 
 -- placements: 親 world の所有者だけ
+drop policy if exists "placements selectable by world owner" on public.placements;
 create policy "placements selectable by world owner"
   on public.placements for select using (
     exists (select 1 from public.worlds w where w.id = world_id and w.user_id = auth.uid())
   );
+drop policy if exists "placements insertable by world owner" on public.placements;
 create policy "placements insertable by world owner"
   on public.placements for insert with check (
     exists (select 1 from public.worlds w where w.id = world_id and w.user_id = auth.uid())
   );
+drop policy if exists "placements updatable by world owner" on public.placements;
 create policy "placements updatable by world owner"
   on public.placements for update using (
     exists (select 1 from public.worlds w where w.id = world_id and w.user_id = auth.uid())
   );
+drop policy if exists "placements deletable by world owner" on public.placements;
 create policy "placements deletable by world owner"
   on public.placements for delete using (
     exists (select 1 from public.worlds w where w.id = world_id and w.user_id = auth.uid())
@@ -123,18 +137,18 @@ create policy "placements deletable by world owner"
 
 -- ============================================================
 --  Storage: 画像バケット
---  下記は SQL でも作れるが、ダッシュボード Storage で
---  "captures" バケット(Public) を作成してもよい。
 -- ============================================================
 insert into storage.buckets (id, name, public)
 values ('captures', 'captures', true)
 on conflict (id) do nothing;
 
 -- 自分のフォルダ (captures/<uid>/...) にだけ書き込み可、閲覧は公開
+drop policy if exists "capture images are publicly readable" on storage.objects;
 create policy "capture images are publicly readable"
   on storage.objects for select
   using (bucket_id = 'captures');
 
+drop policy if exists "users upload to own folder" on storage.objects;
 create policy "users upload to own folder"
   on storage.objects for insert
   with check (
@@ -142,6 +156,7 @@ create policy "users upload to own folder"
     and (storage.foldername(name))[1] = auth.uid()::text
   );
 
+drop policy if exists "users update own images" on storage.objects;
 create policy "users update own images"
   on storage.objects for update
   using (
@@ -149,6 +164,7 @@ create policy "users update own images"
     and (storage.foldername(name))[1] = auth.uid()::text
   );
 
+drop policy if exists "users delete own images" on storage.objects;
 create policy "users delete own images"
   on storage.objects for delete
   using (

@@ -1,26 +1,97 @@
 @import "tailwindcss";
 
+/* ============================================================
+   ピクセルUI デザインシステム（レトロゲーム図鑑風）
+   ============================================================ */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: #c6cbc7; --screen: #e8e5d8; --panel: #f4f2ea; --panel2: #dedccd;
+  --ink: #262433; --muted: #746f82; --line: #262433;
+  --accent: #dd6f77; --accent-ink: #ffffff; --teal: #2f9e8f; --gold: #cf9c48;
+  --shadow: rgba(38,36,51,.9); --shadow-soft: rgba(38,36,51,.16);
+  --hi: rgba(255,255,255,.75); --lo: rgba(38,36,51,.22);
 }
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --bg: #0f0f18; --screen: #171826; --panel: #21222f; --panel2: #191a26;
+    --ink: #e9e6da; --muted: #948fa4; --line: #423f58;
+    --accent: #ef848b; --accent-ink: #14121a; --teal: #3bb3a3; --gold: #e0b25e;
+    --shadow: rgba(0,0,0,.6); --shadow-soft: rgba(0,0,0,.4);
+    --hi: rgba(255,255,255,.10); --lo: rgba(0,0,0,.42);
   }
+}
+:root[data-theme="light"] {
+  --bg: #c6cbc7; --screen: #e8e5d8; --panel: #f4f2ea; --panel2: #dedccd;
+  --ink: #262433; --muted: #746f82; --line: #262433;
+  --accent: #dd6f77; --accent-ink: #ffffff; --teal: #2f9e8f; --gold: #cf9c48;
+  --shadow: rgba(38,36,51,.9); --shadow-soft: rgba(38,36,51,.16);
+  --hi: rgba(255,255,255,.75); --lo: rgba(38,36,51,.22);
+}
+:root[data-theme="dark"] {
+  --bg: #0f0f18; --screen: #171826; --panel: #21222f; --panel2: #191a26;
+  --ink: #e9e6da; --muted: #948fa4; --line: #423f58;
+  --accent: #ef848b; --accent-ink: #14121a; --teal: #3bb3a3; --gold: #e0b25e;
+  --shadow: rgba(0,0,0,.6); --shadow-soft: rgba(0,0,0,.4);
+  --hi: rgba(255,255,255,.10); --lo: rgba(0,0,0,.42);
+}
+
+/* Tailwind ユーティリティに色トークンを供給（bg-screen, text-ink など） */
+@theme {
+  --color-bg: var(--bg);
+  --color-screen: var(--screen);
+  --color-panel: var(--panel);
+  --color-panel2: var(--panel2);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accentink: var(--accent-ink);
+  --color-teal: var(--teal);
+  --color-gold: var(--gold);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", system-ui, sans-serif;
+}
+
+/* 等幅（番号・学名・自信度など） */
+.font-pixel { font-family: ui-monospace, "SFMono-Regular", "DejaVu Sans Mono", monospace; }
+
+/* ドット絵をくっきり表示 */
+.pixelated { image-rendering: pixelated; }
+
+/* ------------------------------------------------------------
+   ピクセル窓枠：四角い枠＋左上ハイライト／右下シャドウ＋硬い影
+   ------------------------------------------------------------ */
+.px {
+  position: relative;
+  border: 3px solid var(--line);
+  background: var(--panel);
+  box-shadow: 4px 4px 0 var(--shadow);
+}
+.px::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo);
+}
+
+/* ピクセルボタン */
+.pxbtn {
+  position: relative; display: inline-flex; align-items: center; justify-content: center;
+  gap: 8px; font-weight: 800; font-family: inherit; cursor: pointer;
+  border: 3px solid var(--line); background: var(--panel); color: var(--ink);
+  box-shadow: 4px 4px 0 var(--shadow); padding: 12px 16px;
+}
+.pxbtn::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo);
+}
+.pxbtn:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--shadow); }
+.pxbtn:disabled { opacity: .55; cursor: not-allowed; }
+.pxbtn.accent { background: var(--accent); color: var(--accent-ink); }
+
+/* フォーカスの可視化 */
+:where(a, button, input, [tabindex]):focus-visible {
+  outline: 3px solid var(--teal); outline-offset: 2px;
 }

@@ -19,6 +19,7 @@ export type Capture = {
 
 /** 識別 API が返す種情報 */
 export type Identification = {
+  identified: boolean;
   commonNameJa: string;
   commonNameEn: string;
   scientificName: string;

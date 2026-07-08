@@ -57,7 +57,7 @@ export default function LoginPage() {
           placeholder="メールアドレス"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2"
+          className="w-full border-[3px] border-line bg-panel px-3 py-2 font-bold"
         />
         <input
           type="password"
@@ -66,19 +66,15 @@ export default function LoginPage() {
           placeholder="パスワード（6文字以上）"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2"
+          className="w-full border-[3px] border-line bg-panel px-3 py-2 font-bold"
         />
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full rounded-md bg-emerald-600 text-white py-2 font-semibold hover:bg-emerald-700 disabled:opacity-50"
-        >
+        <button type="submit" disabled={loading} className="pxbtn accent w-full">
           {loading ? "処理中…" : mode === "signin" ? "ログイン" : "登録する"}
         </button>
       </form>
 
       {msg && (
-        <p className="mt-4 text-sm text-center text-amber-600 dark:text-amber-400">
+        <p className="px mt-4 p-3 text-sm text-center text-gold font-bold bg-panel">
           {msg}
         </p>
       )}
@@ -88,7 +84,7 @@ export default function LoginPage() {
           setMode(mode === "signin" ? "signup" : "signin");
           setMsg(null);
         }}
-        className="mt-6 w-full text-sm text-slate-500 hover:text-emerald-600"
+        className="mt-6 w-full text-sm text-muted hover:text-accent"
       >
         {mode === "signin"
           ? "アカウントがない方はこちら（新規登録）"

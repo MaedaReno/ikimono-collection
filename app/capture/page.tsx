@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { toPixelArt, imageToJpegBase64 } from "@/lib/pixelate";
 import { facilityForCoords } from "@/lib/facilities";
 import type { Identification } from "@/lib/types";
+import CameraCapture from "@/components/CameraCapture";
 
 type Step =
   | "idle"
@@ -37,6 +38,7 @@ export default function CapturePage() {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<Identification | null>(null);
   const [facility, setFacility] = useState<string | null>(null);
+  const [cameraOpen, setCameraOpen] = useState(false);
 
   function getCoords(): Promise<{ lat: number; lng: number } | null> {
     return new Promise((resolve) => {
@@ -49,10 +51,19 @@ export default function CapturePage() {
     });
   }
 
-  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (file) processFile(file);
+    // 同じファイルを再選択しても onChange が発火するようにリセット
+    e.target.value = "";
+  }
 
+  function handleCameraCapture(blob: Blob) {
+    setCameraOpen(false);
+    processFile(blob);
+  }
+
+  async function processFile(file: File | Blob) {
     setError(null);
     setResult(null);
     setPixelPreview(null);
@@ -156,20 +167,40 @@ export default function CapturePage() {
     <div className="mx-auto max-w-xl px-4 py-8">
       <h1 className="text-2xl font-extrabold">つかまえる</h1>
       <p className="mt-2 text-sm text-muted leading-relaxed">
-        カメラで撮るか、写真を選んでください。AI が種類を判定し、ドット絵にして図鑑に登録します。
+        カメラで撮るか、スマホの写真を選んでください。AI が種類を判定し、ドット絵にして図鑑に登録します。
       </p>
 
-      <div className="mt-6">
+      <div className="mt-6 grid grid-cols-2 gap-3">
+        <button
+          type="button"
+          onClick={() => setCameraOpen(true)}
+          disabled={busy}
+          className="pxbtn accent text-sm"
+        >
+          📷 カメラでとる
+        </button>
+        <button
+          type="button"
+          onClick={() => fileInput.current?.click()}
+          disabled={busy}
+          className="pxbtn text-sm"
+        >
+          🖼 写真をえらぶ
+        </button>
+        {/* 写真をえらぶ用（capture 指定なし＝ギャラリー/ファイルから選べる） */}
         <input
           ref={fileInput}
           type="file"
           accept="image/*"
-          capture="environment"
           onChange={handleFile}
           disabled={busy}
-          className="block w-full text-sm font-bold file:mr-4 file:border-[3px] file:border-line file:bg-accent file:px-4 file:py-2 file:text-accentink file:font-bold file:cursor-pointer"
+          className="hidden"
         />
       </div>
+
+      {cameraOpen && (
+        <CameraCapture onCapture={handleCameraCapture} onClose={() => setCameraOpen(false)} />
+      )}
 
       {preview && (
         <div className="mt-6 grid grid-cols-2 gap-4">

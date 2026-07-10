@@ -10,6 +10,7 @@ import CameraCapture from "@/components/CameraCapture";
 
 type Step =
   | "idle"
+  | "confirm"
   | "identifying"
   | "uploading"
   | "pixelating"
@@ -20,6 +21,7 @@ type Step =
 
 const STEP_LABEL: Record<Step, string> = {
   idle: "",
+  confirm: "",
   identifying: "AI が生き物を識別中…",
   uploading: "画像をアップロード中…",
   pixelating: "ドット絵を生成中…",
@@ -39,6 +41,7 @@ export default function CapturePage() {
   const [result, setResult] = useState<Identification | null>(null);
   const [facility, setFacility] = useState<string | null>(null);
   const [cameraOpen, setCameraOpen] = useState(false);
+  const [pendingFile, setPendingFile] = useState<File | Blob | null>(null);
 
   function getCoords(): Promise<{ lat: number; lng: number } | null> {
     return new Promise((resolve) => {
@@ -53,22 +56,42 @@ export default function CapturePage() {
 
   function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
-    if (file) processFile(file);
+    if (file) stageFile(file);
     // 同じファイルを再選択しても onChange が発火するようにリセット
     e.target.value = "";
   }
 
   function handleCameraCapture(blob: Blob) {
     setCameraOpen(false);
-    processFile(blob);
+    stageFile(blob);
   }
 
-  async function processFile(file: File | Blob) {
+  // 撮影/選択した写真を「確認待ち」にする（まだ解析しない）
+  function stageFile(file: File | Blob) {
     setError(null);
     setResult(null);
     setPixelPreview(null);
     setFacility(null);
     setPreview(URL.createObjectURL(file));
+    setPendingFile(file);
+    setStep("confirm");
+  }
+
+  // 確認をやめて最初の状態に戻す
+  function cancelPending() {
+    setPendingFile(null);
+    setPreview(null);
+    setStep("idle");
+  }
+
+  // 「解析開始」で実際に識別〜保存を実行する
+  async function analyze() {
+    const file = pendingFile;
+    if (!file) return;
+
+    setError(null);
+    setResult(null);
+    setPixelPreview(null);
 
     try {
       const {
@@ -205,7 +228,31 @@ export default function CapturePage() {
         onClose={() => setCameraOpen(false)}
       />
 
-      {preview && (
+      {/* 確認ステップ：解析前にこの写真でいいか確認する */}
+      {step === "confirm" && preview && (
+        <div className="mt-6">
+          <div className="font-pixel text-[10px] uppercase tracking-wider text-muted mb-1">
+            この写真で解析しますか？
+          </div>
+          <div className="px !p-0 overflow-hidden">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={preview} alt="確認" className="w-full aspect-square object-cover" />
+          </div>
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            <button type="button" onClick={analyze} className="pxbtn accent text-sm">
+              🔍 解析を開始
+            </button>
+            <button type="button" onClick={cancelPending} className="pxbtn text-sm">
+              やめる
+            </button>
+          </div>
+          <p className="mt-2 text-xs text-muted leading-relaxed">
+            解析を始めると AI が種類を判定し、ドット絵にして図鑑に登録します。
+          </p>
+        </div>
+      )}
+
+      {preview && step !== "confirm" && (
         <div className="mt-6 grid grid-cols-2 gap-4">
           <div>
             <div className="font-pixel text-[10px] uppercase tracking-wider text-muted mb-1">

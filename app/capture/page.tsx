@@ -198,9 +198,12 @@ export default function CapturePage() {
         />
       </div>
 
-      {cameraOpen && (
-        <CameraCapture onCapture={handleCameraCapture} onClose={() => setCameraOpen(false)} />
-      )}
+      {/* 常時マウントして取得済みカメラを保持（許可を毎回聞かれないように）。表示は open で制御 */}
+      <CameraCapture
+        open={cameraOpen}
+        onCapture={handleCameraCapture}
+        onClose={() => setCameraOpen(false)}
+      />
 
       {preview && (
         <div className="mt-6 grid grid-cols-2 gap-4">

@@ -167,6 +167,8 @@ export default function CapturePage() {
         fun_facts: identification.funFacts ?? [],
         conservation_status: identification.conservationStatus || null,
         confidence: identification.confidence ?? null,
+        category: identification.category || null,
+        biome: identification.biome || null,
         original_url: originalUrl,
         pixel_url: pixelUrl,
         lat: coords?.lat ?? null,
@@ -352,6 +354,11 @@ export default function CapturePage() {
             </span>
           </div>
           <div className="mt-3 flex flex-wrap gap-2 font-pixel text-[10px]">
+            {result.category && (
+              <span className="border-2 border-line bg-panel2 text-ink px-2 py-1">
+                🏷 {result.category}
+              </span>
+            )}
             {result.conservationStatus && (
               <span className="border-2 border-line bg-gold text-ink px-2 py-1">
                 保全: {result.conservationStatus}

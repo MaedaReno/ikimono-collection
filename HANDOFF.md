@@ -19,6 +19,7 @@
 ## 4. DB スキーマ & マイグレーション（Supabase SQL Editor に貼って実行）
 - `supabase/schema.sql` … 初期スキーマ。テーブル: `profiles / captures / worlds / placements`、**RLS 全テーブル有効（自分の行のみ）**、`captures` Storage バケット＋ポリシー。再実行可（policy は drop→create）。
 - `supabase/migrations/002_biomes.sql` … `worlds.biome` 追加 + 重複 worlds 統合 + `unique(user_id,biome)`。**実行済み**。
+- `supabase/migrations/003_tags.sql` … `captures.category`(表示用分類ラベル) + `captures.biome`(最適マップ) 追加。**要実行**（Supabase SQL Editor）。未実行だと保存時に列不在エラー。既存行は NULL=未分類（全マップ追加可）。識別スキーマ(`lib/claude.ts`)が category/biome を返し、マップ(`WorldMap.tsx`)は biome 一致（or 未分類）のみ追加可。
 - 図鑑は `captures` を種でグルーピングして導出（専用テーブル無し）。
 - マップ＝バイオーム別 `worlds`（biome: `savanna/aquarium/insect/botanical`）。`placements(world_id, capture_id, x, y, scale)`。
 

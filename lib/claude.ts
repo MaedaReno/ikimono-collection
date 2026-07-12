@@ -26,6 +26,21 @@ export const IdentificationSchema = z.object({
   confidence: z
     .number()
     .describe("種の同定にどれくらい自信があるか 0.0〜1.0"),
+  category: z
+    .string()
+    .describe(
+      "生き物の分類ラベル（日本語・簡潔に）。例: 哺乳類 / 鳥類 / 爬虫類 / 両生類 / 魚類 / 甲殻類 / 貝類 / 頭足類 / 昆虫 / クモ類 / 植物 など。同定できなければ空文字。"
+    ),
+  biome: z
+    .enum(["savanna", "aquarium", "insect", "botanical"])
+    .describe(
+      "この生き物を展示するのに最も適したマップを1つ選ぶ。" +
+        "savanna=陸上の動物（哺乳類・鳥類・爬虫類など）、" +
+        "aquarium=水中/水辺の生き物（魚類・甲殻類・貝類・頭足類・海獣・両生類など）、" +
+        "insect=昆虫や陸上の節足動物（クモ・ムカデなど）、" +
+        "botanical=植物（花・木・多肉・シダなど）。" +
+        "迷った場合は最も近いものを選ぶこと。"
+    ),
 });
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
@@ -59,7 +74,8 @@ export async function identifyCreature(
               "・大まかな分類（例:『カモの一種』『甲殻類』）までしか分からない場合は、" +
               "その分類名を commonNameJa に入れ、scientificName は空文字、confidence を低めにしてください。\n" +
               "・人間・風景・器物しか写っていない場合も identified=false にしてください。\n" +
-              "同定できた場合は指定スキーマで日本語の解説を作成してください。",
+              "同定できた場合は指定スキーマで日本語の解説を作成し、" +
+              "分類ラベル(category)と、展示に最も適したマップ(biome)も必ず選んでください。",
           },
         ],
       },

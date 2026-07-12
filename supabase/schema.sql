@@ -38,6 +38,8 @@ create table if not exists public.captures (
   fun_facts           text[],
   conservation_status text,
   confidence          real,
+  category            text,
+  biome               text,
   original_url        text,
   pixel_url           text,
   lat                 double precision,

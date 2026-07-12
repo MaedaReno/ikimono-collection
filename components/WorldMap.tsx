@@ -21,7 +21,12 @@ type Placed = {
   ph: number;  // ゆらぎ位相
 };
 
-type CaptureLite = { id: string; pixel_url: string | null; common_name: string | null };
+type CaptureLite = {
+  id: string;
+  pixel_url: string | null;
+  common_name: string | null;
+  biome: string | null;
+};
 
 function hashPhase(id: string) {
   let h = 0;
@@ -116,7 +121,7 @@ export default function WorldMap() {
   useEffect(() => {
     (async () => {
       const { data } = await supabase
-        .from("captures").select("id, pixel_url, common_name").order("created_at", { ascending: false });
+        .from("captures").select("id, pixel_url, common_name, biome").order("created_at", { ascending: false });
       const caps = (data ?? []) as CaptureLite[];
       caps.forEach((c) => c.pixel_url && ensureImg(c.pixel_url));
       setCaptures(caps);
@@ -239,6 +244,8 @@ export default function WorldMap() {
 
   async function addCreature(cap: CaptureLite) {
     if (!cap.pixel_url) return;
+    // タグ付きは対応するマップにのみ追加できる（未分類=null はどこでも可）
+    if (cap.biome && cap.biome !== biome) return;
     const wid = await ensureWorld(biome);
     if (!wid) return;
     const el = containerRef.current!;
@@ -311,30 +318,50 @@ export default function WorldMap() {
         </div>
       </div>
 
-      {/* トレイ：コレクションから追加 */}
+      {/* トレイ：コレクションから追加（このマップに合うタグの生き物だけ） */}
       <div className="mt-6 font-pixel text-[11px] uppercase tracking-wider text-muted">
         このマップに追加
       </div>
-      {!loading && captures.filter((c) => c.pixel_url).length === 0 && (
-        <p className="mt-2 text-sm text-muted">
-          まだ生き物がいません。
-          <Link href="/capture" className="text-accent underline ml-1">つかまえる</Link>
-        </p>
-      )}
-      <div className="mt-2 flex flex-wrap gap-2">
-        {captures.filter((c) => c.pixel_url).map((c) => (
-          <button
-            key={c.id}
-            onClick={() => addCreature(c)}
-            title={`${c.common_name ?? "生き物"} を追加`}
-            className="px !p-1 w-16 hover:!shadow-[2px_2px_0_var(--teal)]"
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={c.pixel_url!} alt={c.common_name ?? "生き物"} className="w-full aspect-square object-contain pixelated" />
-            <div className="text-[9px] truncate text-center mt-0.5">{c.common_name ?? "生き物"}</div>
-          </button>
-        ))}
-      </div>
+      <p className="mt-1 text-[11px] text-muted leading-relaxed">
+        「{BIOME_MAP[biome].label}」に合う分類の生き物だけ表示しています（未分類はどのマップにも追加できます）。
+      </p>
+      {(() => {
+        const addable = captures.filter((c) => c.pixel_url && (!c.biome || c.biome === biome));
+        const hasAny = captures.some((c) => c.pixel_url);
+        if (!loading && !hasAny) {
+          return (
+            <p className="mt-2 text-sm text-muted">
+              まだ生き物がいません。
+              <Link href="/capture" className="text-accent underline ml-1">つかまえる</Link>
+            </p>
+          );
+        }
+        if (!loading && hasAny && addable.length === 0) {
+          return (
+            <p className="mt-2 text-sm text-muted">
+              このマップに合う生き物がまだいません。別のマップを選ぶか、新しく
+              <Link href="/capture" className="text-accent underline mx-1">つかまえて</Link>
+              みましょう。
+            </p>
+          );
+        }
+        return (
+          <div className="mt-2 flex flex-wrap gap-2">
+            {addable.map((c) => (
+              <button
+                key={c.id}
+                onClick={() => addCreature(c)}
+                title={`${c.common_name ?? "生き物"} を追加`}
+                className="px !p-1 w-16 hover:!shadow-[2px_2px_0_var(--teal)]"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={c.pixel_url!} alt={c.common_name ?? "生き物"} className="w-full aspect-square object-contain pixelated" />
+                <div className="text-[9px] truncate text-center mt-0.5">{c.common_name ?? "生き物"}</div>
+              </button>
+            ))}
+          </div>
+        );
+      })()}
     </div>
   );
 }

@@ -8,6 +8,10 @@ export type Capture = {
   fun_facts: string[] | null;
   conservation_status: string | null;
   confidence: number | null;
+  /** 表示用の分類ラベル（例: 魚類 / 哺乳類 / 昆虫 / 植物）。未分類は null */
+  category: string | null;
+  /** 最適なマップ（savanna/aquarium/insect/botanical）。未分類は null */
+  biome: string | null;
   original_url: string | null;
   pixel_url: string | null;
   lat: number | null;
@@ -27,6 +31,10 @@ export type Identification = {
   funFacts: string[];
   conservationStatus: string;
   confidence: number;
+  /** 表示用の分類ラベル（例: 魚類 / 哺乳類 / 昆虫 / 植物）。同定できなければ空文字 */
+  category: string;
+  /** 最適なマップ */
+  biome: "savanna" | "aquarium" | "insect" | "botanical";
 };
 
 export type Placement = {

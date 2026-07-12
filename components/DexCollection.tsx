@@ -67,6 +67,9 @@ export default function DexCollection({ captures }: Props) {
                 #{String(numberOf(i)).padStart(3, "0")}
               </div>
               <div className="font-bold text-xs truncate">{c.common_name ?? "不明"}</div>
+              {c.category && (
+                <div className="font-pixel text-[9px] text-muted truncate">🏷 {c.category}</div>
+              )}
               {c.facility_name && (
                 <div className="text-[10px] text-teal truncate">📍 {c.facility_name}</div>
               )}
@@ -154,6 +157,11 @@ function DexModal({
             )}
 
             <div className="mt-3 flex flex-wrap gap-2 font-pixel text-[10px]">
+              {c.category && (
+                <span className="border-2 border-line bg-panel2 px-2 py-1 text-ink">
+                  🏷 {c.category}
+                </span>
+              )}
               {c.conservation_status && (
                 <span className="border-2 border-line bg-gold px-2 py-1 text-ink">
                   保全: {c.conservation_status}

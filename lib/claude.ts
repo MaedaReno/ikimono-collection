@@ -18,8 +18,18 @@ export const IdentificationSchema = z.object({
   scientificName: z
     .string()
     .describe("実在する正式な学名（ラテン語二名法）。確信が持てなければ空文字。絶対に創作しない"),
-  description: z.string().describe("この生き物の解説を日本語で2〜4文。生態・特徴・見どころ"),
-  funFacts: z.array(z.string()).describe("面白い豆知識を日本語で2〜3個"),
+  description: z
+    .string()
+    .describe(
+      "この生き物の基本的な解説を日本語で2〜4文。分類・生態・大きさ・生息地などの基礎情報。丁寧な『ですます』調。"
+    ),
+  funFacts: z
+    .array(z.string())
+    .describe(
+      "豆知識を日本語で2〜3個。【重要】description と内容が重複しないこと。基礎情報の言い換えは禁止で、" +
+        "『実物を見たときに楽しめる意外な小ネタ』にする（例: 見分けるコツ、体の面白い仕組み、驚きの行動や記録、名前の由来、" +
+        "動物園/水族館での観察ポイントなど）。語尾は『〜だぞ！』『〜なんだぞ！』のように親しみやすく元気な口調にすること。"
+    ),
   conservationStatus: z
     .string()
     .describe("IUCN 保全状況（例: 軽度懸念 / 危急 / 絶滅危惧 など）。不明なら『不明』"),
@@ -74,6 +84,10 @@ export async function identifyCreature(
               "・大まかな分類（例:『カモの一種』『甲殻類』）までしか分からない場合は、" +
               "その分類名を commonNameJa に入れ、scientificName は空文字、confidence を低めにしてください。\n" +
               "・人間・風景・器物しか写っていない場合も identified=false にしてください。\n" +
+              "【解説の書き分け】\n" +
+              "・description は基礎情報（ですます調）。funFacts は description と重複させず、" +
+              "実物を見たときに『へぇ！』となる意外で面白い小ネタにする。基礎情報の言い換えは禁止。\n" +
+              "・funFacts の語尾は『〜だぞ！』『〜なんだぞ！』のように親しみやすく元気な口調にする。\n" +
               "同定できた場合は指定スキーマで日本語の解説を作成し、" +
               "分類ラベル(category)と、展示に最も適したマップ(biome)も必ず選んでください。",
           },

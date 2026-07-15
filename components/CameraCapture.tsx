@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { getFrame } from "@/lib/frames";
 
 type Props = {
   /** モーダルを表示するか。false の間もコンポーネントは残り、取得済みカメラを保持する */
@@ -9,6 +10,8 @@ type Props = {
   onCapture: (blob: Blob) => void;
   /** ×ボタンで閉じる */
   onClose: () => void;
+  /** 装飾枠テーマのキー（撮影画面外のメニューで選択。lib/frames.ts） */
+  frameKey?: string;
 };
 
 const MAX_ZOOM = 4;
@@ -18,7 +21,8 @@ const MAX_ZOOM = 4;
  * - ピンチでデジタルズーム（枠は固定・映像だけ拡大）
  * - カメラ許可は一度取得したらページ内で使い回す（毎回聞かれない／通知が出ない）
  */
-export default function CameraCapture({ open, onCapture, onClose }: Props) {
+export default function CameraCapture({ open, onCapture, onClose, frameKey }: Props) {
+  const frame = getFrame(frameKey);
   const videoRef = useRef<HTMLVideoElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -178,9 +182,43 @@ export default function CameraCapture({ open, onCapture, onClose }: Props) {
           style={{ transform: `scale(${zoom})`, transformOrigin: "center" }}
         />
 
-        {/* 基準枠オーバーレイ（映像のズームとは独立して固定） */}
+        {/* 装飾外枠（画面の最外周を囲む・映像やシャッター操作は阻害しない） */}
+        {!error && (
+          <div className="pointer-events-none absolute inset-0 z-[2]">
+            <div
+              className="absolute inset-0"
+              style={{
+                border: `12px solid ${frame.border}`,
+                boxShadow: `inset 0 0 0 3px ${frame.glow}, inset 0 0 22px ${frame.glow}`,
+              }}
+            />
+            {/* 四隅の飾り */}
+            {frame.corners[0] && (
+              <span className="absolute left-1 top-1 text-2xl" style={{ filter: "drop-shadow(0 1px 2px rgba(0,0,0,.7))" }}>
+                {frame.corners[0]}
+              </span>
+            )}
+            {frame.corners[1] && (
+              <span className="absolute right-1 top-1 text-2xl" style={{ filter: "drop-shadow(0 1px 2px rgba(0,0,0,.7))" }}>
+                {frame.corners[1]}
+              </span>
+            )}
+            {frame.corners[2] && (
+              <span className="absolute bottom-1 left-1 text-2xl" style={{ filter: "drop-shadow(0 1px 2px rgba(0,0,0,.7))" }}>
+                {frame.corners[2]}
+              </span>
+            )}
+            {frame.corners[3] && (
+              <span className="absolute bottom-1 right-1 text-2xl" style={{ filter: "drop-shadow(0 1px 2px rgba(0,0,0,.7))" }}>
+                {frame.corners[3]}
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* 基準枠オーバーレイ（映像のズームとは独立して固定・テーマ連動） */}
         {ready && !error && (
-          <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+          <div className="pointer-events-none absolute inset-0 z-[3] flex flex-col items-center justify-center">
             <div className="relative aspect-square w-[78vw] max-w-[340px]">
               {(
                 [
@@ -192,8 +230,8 @@ export default function CameraCapture({ open, onCapture, onClose }: Props) {
               ).map((pos) => (
                 <span
                   key={pos}
-                  className={`absolute h-8 w-8 border-white/95 ${pos}`}
-                  style={{ filter: "drop-shadow(0 0 2px rgba(0,0,0,.8))" }}
+                  className={`absolute h-8 w-8 ${pos}`}
+                  style={{ borderColor: frame.guide, filter: "drop-shadow(0 0 2px rgba(0,0,0,.8))" }}
                 />
               ))}
             </div>
@@ -201,7 +239,7 @@ export default function CameraCapture({ open, onCapture, onClose }: Props) {
               className="mt-4 px-6 text-center font-pixel text-[12px] font-bold text-white"
               style={{ textShadow: "1px 1px 2px rgba(0,0,0,.9)" }}
             >
-              この枠にぴったり合うように撮ってください
+              {frame.caption}
             </p>
           </div>
         )}

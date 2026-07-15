@@ -250,11 +250,15 @@ export default function CapturePage() {
               onClick={() => chooseFrame(f.key)}
               disabled={busy}
               aria-pressed={frameKey === f.key}
-              className={`font-pixel text-xs font-bold border-[3px] border-line px-3 py-1.5 ${
+              className={`inline-flex items-center gap-1.5 font-pixel text-xs font-bold border-[3px] border-line px-3 py-1.5 ${
                 frameKey === f.key ? "bg-teal text-ink" : "bg-panel2 text-muted"
               }`}
             >
-              {f.corners[0] || "▫"} {f.label}
+              <span
+                className="inline-block h-3 w-3 border-2 border-line"
+                style={{ background: f.swatch }}
+              />
+              {f.label}
             </button>
           ))}
         </div>

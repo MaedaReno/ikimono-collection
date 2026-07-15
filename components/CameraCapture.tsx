@@ -192,27 +192,28 @@ export default function CameraCapture({ open, onCapture, onClose, frameKey }: Pr
                 boxShadow: `inset 0 0 0 3px ${frame.glow}, inset 0 0 22px ${frame.glow}`,
               }}
             />
-            {/* 四隅の飾り */}
-            {frame.corners[0] && (
-              <span className="absolute left-1 top-1 text-2xl" style={{ filter: "drop-shadow(0 1px 2px rgba(0,0,0,.7))" }}>
-                {frame.corners[0]}
-              </span>
-            )}
-            {frame.corners[1] && (
-              <span className="absolute right-1 top-1 text-2xl" style={{ filter: "drop-shadow(0 1px 2px rgba(0,0,0,.7))" }}>
-                {frame.corners[1]}
-              </span>
-            )}
-            {frame.corners[2] && (
-              <span className="absolute bottom-1 left-1 text-2xl" style={{ filter: "drop-shadow(0 1px 2px rgba(0,0,0,.7))" }}>
-                {frame.corners[2]}
-              </span>
-            )}
-            {frame.corners[3] && (
-              <span className="absolute bottom-1 right-1 text-2xl" style={{ filter: "drop-shadow(0 1px 2px rgba(0,0,0,.7))" }}>
-                {frame.corners[3]}
-              </span>
-            )}
+            {/* 四隅の SVG 飾り（左上向きに描いたものを90°ずつ回転） */}
+            {(
+              [
+                { key: "tl", pos: { left: 4, top: 4 }, rot: 0 },
+                { key: "tr", pos: { right: 4, top: 4 }, rot: 90 },
+                { key: "br", pos: { right: 4, bottom: 4 }, rot: 180 },
+                { key: "bl", pos: { left: 4, bottom: 4 }, rot: 270 },
+              ] as const
+            ).map((c) => (
+              <div
+                key={c.key}
+                className="absolute"
+                style={{
+                  ...c.pos,
+                  width: frame.cornerSize,
+                  height: frame.cornerSize,
+                  transform: `rotate(${c.rot}deg)`,
+                  filter: "drop-shadow(0 1px 2px rgba(0,0,0,.6))",
+                }}
+                dangerouslySetInnerHTML={{ __html: frame.cornerSvg }}
+              />
+            ))}
           </div>
         )}
 

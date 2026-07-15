@@ -1,12 +1,13 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { toPixelArt, imageToJpegBase64 } from "@/lib/pixelate";
 import { facilityForCoords } from "@/lib/facilities";
 import type { Identification } from "@/lib/types";
 import CameraCapture from "@/components/CameraCapture";
+import { FRAMES, DEFAULT_FRAME_KEY, FRAME_STORAGE_KEY } from "@/lib/frames";
 
 type Step =
   | "idle"
@@ -42,6 +43,19 @@ export default function CapturePage() {
   const [facility, setFacility] = useState<string | null>(null);
   const [cameraOpen, setCameraOpen] = useState(false);
   const [pendingFile, setPendingFile] = useState<File | Blob | null>(null);
+  const [frameKey, setFrameKey] = useState(DEFAULT_FRAME_KEY);
+
+  // 枠デザインの選択を localStorage から復元（ハイドレーション整合のため初回描画後に反映）
+  useEffect(() => {
+    const saved = localStorage.getItem(FRAME_STORAGE_KEY);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (saved) setFrameKey(saved);
+  }, []);
+
+  function chooseFrame(key: string) {
+    setFrameKey(key);
+    localStorage.setItem(FRAME_STORAGE_KEY, key);
+  }
 
   function getCoords(): Promise<{ lat: number; lng: number } | null> {
     return new Promise((resolve) => {
@@ -223,11 +237,35 @@ export default function CapturePage() {
         />
       </div>
 
+      {/* カメラの枠デザイン選択（撮影画面とは別のメニュー。選択は保存され次回も適用） */}
+      <div className="mt-4">
+        <div className="font-pixel text-[10px] uppercase tracking-wider text-muted mb-1">
+          カメラの枠デザイン
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {FRAMES.map((f) => (
+            <button
+              key={f.key}
+              type="button"
+              onClick={() => chooseFrame(f.key)}
+              disabled={busy}
+              aria-pressed={frameKey === f.key}
+              className={`font-pixel text-xs font-bold border-[3px] border-line px-3 py-1.5 ${
+                frameKey === f.key ? "bg-teal text-ink" : "bg-panel2 text-muted"
+              }`}
+            >
+              {f.corners[0] || "▫"} {f.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* 常時マウントして取得済みカメラを保持（許可を毎回聞かれないように）。表示は open で制御 */}
       <CameraCapture
         open={cameraOpen}
         onCapture={handleCameraCapture}
         onClose={() => setCameraOpen(false)}
+        frameKey={frameKey}
       />
 
       {/* 確認ステップ：解析前にこの写真でいいか確認する */}
@@ -295,7 +333,25 @@ export default function CapturePage() {
       )}
 
       {error && (
-        <p className="px mt-6 bg-panel p-4 text-sm text-accent font-bold">{error}</p>
+        <div className="mt-6">
+          <p className="px bg-panel p-4 text-sm text-accent font-bold">{error}</p>
+          <div className="mt-3 grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => setCameraOpen(true)}
+              className="pxbtn accent text-sm"
+            >
+              📷 もう一枚とる
+            </button>
+            <button
+              type="button"
+              onClick={() => fileInput.current?.click()}
+              className="pxbtn text-sm"
+            >
+              🖼 写真をえらぶ
+            </button>
+          </div>
+        </div>
       )}
 
       {step === "unidentified" && (
@@ -308,6 +364,22 @@ export default function CapturePage() {
           <p className="mt-2 text-xs text-muted">
             （実在しない生き物を登録しないよう、確信が持てない場合は保存していません）
           </p>
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => setCameraOpen(true)}
+              className="pxbtn accent text-sm"
+            >
+              📷 もう一枚とる
+            </button>
+            <button
+              type="button"
+              onClick={() => fileInput.current?.click()}
+              className="pxbtn text-sm"
+            >
+              🖼 写真をえらぶ
+            </button>
+          </div>
         </div>
       )}
 
@@ -374,13 +446,22 @@ export default function CapturePage() {
       )}
 
       {step === "done" && (
-        <div className="mt-6 flex gap-3">
-          <Link href="/dex" className="pxbtn accent text-sm">
-            図鑑を見る
-          </Link>
-          <Link href="/world" className="pxbtn text-sm">
-            マップに配置
-          </Link>
+        <div className="mt-6 space-y-3">
+          <div className="flex gap-3">
+            <Link href="/dex" className="pxbtn accent text-sm">
+              図鑑を見る
+            </Link>
+            <Link href="/world" className="pxbtn text-sm">
+              マップに配置
+            </Link>
+          </div>
+          <button
+            type="button"
+            onClick={() => setCameraOpen(true)}
+            className="pxbtn text-sm"
+          >
+            📷 もう一枚とる
+          </button>
         </div>
       )}
     </div>

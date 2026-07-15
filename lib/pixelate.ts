@@ -6,8 +6,8 @@
  * 2) Canvas で 縮小→最近傍拡大＋減色 してドット絵に
  */
 
-const PIXEL_SIZE = 64; // ドット絵の解像度（縦横の最大ドット数）
-const PALETTE_STEPS = 6; // 1チャンネルあたりの階調数（減色）
+const PIXEL_SIZE = 80; // ドット絵の解像度（縦横の最大ドット数）。上げるほど精細、下げるほどレトロ
+const PALETTE_STEPS = 8; // 1チャンネルあたりの階調数（減色）。8→8^3=512色相当で発色が豊かに
 
 export async function toPixelArt(file: File | Blob): Promise<Blob> {
   // 1) 背景除去（動的 import：クライアントでのみ読み込む）

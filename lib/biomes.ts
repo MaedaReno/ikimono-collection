@@ -81,6 +81,26 @@ export const BIOMES: Biome[] = [
       const tx = Math.round(W * 0.7);
       o.fillStyle = "#7a5a3a"; o.fillRect(tx, g - 18, 3, 18);
       disc(o, tx + 1, g - 20, 8, "#6ba84e"); o.fillStyle = "#7fb85a"; o.fillRect(tx - 8, g - 22, 18, 3);
+      // 小さめのアカシア（左）
+      const tx2 = Math.round(W * 0.12);
+      o.fillStyle = "#7a5a3a"; o.fillRect(tx2, g - 12, 2, 12);
+      disc(o, tx2 + 1, g - 13, 6, "#6ba84e"); o.fillStyle = "#7fb85a"; o.fillRect(tx2 - 5, g - 14, 12, 2);
+      // 雲
+      for (const [cx, cy] of [[W * 0.22, 11], [W * 0.48, 8]] as [number, number][]) {
+        const x = Math.round(cx);
+        disc(o, x, cy, 4, "#ffffff"); disc(o, x + 5, cy + 1, 5, "#ffffff"); disc(o, x + 11, cy, 4, "#f4f6ef");
+      }
+      // 遠景の鳥（Vの群れ）
+      o.fillStyle = "#5a5f6e";
+      for (const [bx, by] of [[W * 0.5, 20], [W * 0.57, 23], [W * 0.63, 18]] as [number, number][]) {
+        const x = Math.round(bx), y = Math.round(by);
+        o.fillRect(x, y, 1, 1); o.fillRect(x + 1, y - 1, 1, 1); o.fillRect(x + 2, y, 1, 1);
+        o.fillRect(x + 3, y - 1, 1, 1); o.fillRect(x + 4, y, 1, 1);
+      }
+      // 低木
+      for (const bx of [Math.round(W * 0.3), Math.round(W * 0.85)]) {
+        disc(o, bx, g - 2, 4, "#6ba84e"); disc(o, bx + 4, g - 1, 3, "#5f9a44");
+      }
     },
   },
   {
@@ -147,6 +167,27 @@ export const BIOMES: Biome[] = [
       // 倒木
       o.fillStyle = "#7a5a3a"; o.fillRect(Math.round(W * 0.4), g + 2, 26, 4);
       o.fillStyle = "#8a6a45"; o.fillRect(Math.round(W * 0.4), g + 2, 26, 1);
+      // きのこ
+      for (const mx of [Math.round(W * 0.25), Math.round(W * 0.66)]) {
+        o.fillStyle = "#efe9d6"; o.fillRect(mx + 1, g - 3, 2, 3);          // 柄
+        o.fillStyle = "#d1584f"; o.fillRect(mx - 1, g - 5, 6, 2); o.fillRect(mx, g - 6, 4, 1); // 傘
+        o.fillStyle = "#ffffff"; o.fillRect(mx + 1, g - 5, 1, 1);
+      }
+      // 下草の小さな花
+      const iflowers = ["#e6b64a", "#e59ac2", "#ffffff"];
+      for (let i = 0; i < 6; i++) {
+        const x = 8 + i * Math.round(W / 6);
+        o.fillStyle = "#5f9a44"; o.fillRect(x, g - 2, 1, 2);
+        disc(o, x, g - 3, 1, iflowers[i % iflowers.length]);
+      }
+      // チョウ（ひらひら）
+      const btx = Math.round(W * 0.52), bty = 24;
+      o.fillStyle = "#e6923a"; o.fillRect(btx - 2, bty, 2, 3); o.fillRect(btx + 1, bty, 2, 3);
+      o.fillStyle = "#3a2f24"; o.fillRect(btx, bty, 1, 3);
+      // 追加の葉かたまり
+      for (const [lx, ly] of [[Math.round(W * 0.42), 8], [Math.round(W * 0.7), 14]] as [number, number][]) {
+        disc(o, lx, ly, 6, "#5f9a44"); disc(o, lx + 5, ly + 2, 5, "#6ba84e");
+      }
     },
   },
   {
@@ -177,6 +218,24 @@ export const BIOMES: Biome[] = [
         o.fillStyle = "#5f9a44"; o.fillRect(px + 3, g - 12, 2, 6); // 茎
         disc(o, px + 4, g - 13, 3, flowers[i % flowers.length]); // 花
       }
+      // 天井から吊り鉢
+      for (const hx of [Math.round(W * 0.25), Math.round(W * 0.55), Math.round(W * 0.85)]) {
+        o.fillStyle = "#bcd3a8"; o.fillRect(hx + 2, 8, 1, 3);       // 吊り紐
+        o.fillStyle = "#8a6a45"; o.fillRect(hx, 11, 5, 3);          // 鉢
+        o.fillStyle = "#5f9a44";
+        for (let k = 0; k < 5; k++) o.fillRect(hx - 1 + k, 14, 1, 3 + (k % 2)); // 垂れる葉
+      }
+      // 大きめのシダ（床の左右）
+      for (const px of [Math.round(W * 0.14), Math.round(W * 0.8)]) {
+        o.fillStyle = "#3a8f6e";
+        for (let y = 0; y < 11; y++) o.fillRect(px + Math.round(Math.sin(y * 0.5) * 2), g - y, 2, 1);
+        o.fillStyle = "#276b50"; o.fillRect(px, g - 2, 2, 2);
+      }
+      // ガラスの水滴
+      o.globalAlpha = 0.5;
+      o.fillStyle = "#ffffff";
+      for (let i = 0; i < 12; i++) o.fillRect((i * 53) % W, (i * 17) % (g - 4) + 2, 1, 2);
+      o.globalAlpha = 1;
     },
   },
 ];

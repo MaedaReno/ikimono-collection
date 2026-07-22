@@ -29,6 +29,23 @@ for (const t of ["profiles", "captures", "worlds", "placements"]) {
   else ok(`${t}: OK`);
 }
 
+console.log("\n=== マイグレーション適用確認 ===");
+// 003_tags: captures.category / captures.biome
+for (const col of ["category", "biome"]) {
+  const { error } = await admin.from("captures").select(col, { head: true }).limit(1);
+  if (error) { ng(`captures.${col} が無い（003_tags.sql を実行）: ${error.message}`); allOk = false; }
+  else ok(`captures.${col}: OK（003 適用済み）`);
+}
+// 004_identify_quota: identify_usage テーブル + consume_identify_quota 関数
+{
+  const { error } = await admin.from("identify_usage").select("*", { count: "exact", head: true });
+  if (error) { ng(`identify_usage が無い（004_identify_quota.sql を実行）: ${error.message}`); allOk = false; }
+  else ok("identify_usage: OK（004 適用済み）");
+  const { error: fErr } = await admin.rpc("consume_identify_quota", { p_limit: 1000000 });
+  if (fErr) { ng(`consume_identify_quota 関数が無い（004 を実行）: ${fErr.message}`); allOk = false; }
+  else ok("consume_identify_quota(): OK");
+}
+
 console.log("\n=== Storage バケット確認 ===");
 const { data: buckets, error: bErr } = await admin.storage.listBuckets();
 if (bErr) { ng("バケット一覧取得失敗: " + bErr.message); allOk = false; }
